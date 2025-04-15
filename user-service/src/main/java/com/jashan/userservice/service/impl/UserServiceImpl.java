@@ -11,6 +11,7 @@ import com.jashan.userservice.dto.LoginRequestDTO;
 import com.jashan.userservice.dto.RegisterRequestDTO;
 import com.jashan.userservice.entity.User;
 import com.jashan.userservice.repository.UserRepository;
+import com.jashan.userservice.security.JwtService;
 import com.jashan.userservice.service.UserService;
 
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,8 @@ public class UserServiceImpl implements UserService {
     private final ModelMapper modelMapper;
 
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
+
+    private final JwtService jwtService;
 
     @Override
     public AuthResponseDTO register(RegisterRequestDTO registerRequestDTO) {
@@ -51,10 +54,12 @@ public class UserServiceImpl implements UserService {
 
         log.info("User registered successfully with email: {}", savedUser.getEmail());
 
+        String token = jwtService.generateToken(savedUser.getEmail());
+
         return AuthResponseDTO.builder()
                 .email(savedUser.getEmail())
                 .role(savedUser.getRole().name())
-                .token("Dummy Token") // TODO: JWT Token
+                .token(token)
                 .build();
     }
 
@@ -77,10 +82,12 @@ public class UserServiceImpl implements UserService {
 
         log.info("User logged in successfully: {}", user.getEmail());
 
+        String token = jwtService.generateToken(user.getEmail());
+
         return AuthResponseDTO.builder()
                 .email(user.getEmail())
                 .role(user.getRole().name())
-                .token("Dummy Token") // TODO: JWT Token
+                .token(token)
                 .build();
     }
 
