@@ -2,12 +2,15 @@ package com.jashan.userservice.service.impl;
 
 import java.util.ArrayList;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import com.jashan.userservice.constant.ErrorCodeEnum;
 import com.jashan.userservice.entity.User;
+import com.jashan.userservice.exception.CustomException;
 import com.jashan.userservice.repository.UserRepository;
 
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +30,13 @@ public class CustomUserDetailService implements UserDetailsService {
         log.info("Loading user from DB by username/email: {}", username);
 
         User user = userRepository.findByEmail(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+                .orElseThrow(() -> {
+                    return new CustomException(
+                            ErrorCodeEnum.USER_NOT_FOUND.getErrorCode(),
+                            ErrorCodeEnum.USER_NOT_FOUND.getErrorMessage(),
+                            HttpStatus.NOT_FOUND,
+                            "User with email '" + username + "' was not found in the database.");
+                });
 
         return new org.springframework.security.core.userdetails.User(
                 user.getEmail(),

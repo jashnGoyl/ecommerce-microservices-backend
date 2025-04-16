@@ -3,13 +3,16 @@ package com.jashan.userservice.service.impl;
 import java.util.Optional;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.jashan.userservice.constant.ErrorCodeEnum;
 import com.jashan.userservice.dto.AuthResponseDTO;
 import com.jashan.userservice.dto.LoginRequestDTO;
 import com.jashan.userservice.dto.RegisterRequestDTO;
 import com.jashan.userservice.entity.User;
+import com.jashan.userservice.exception.CustomException;
 import com.jashan.userservice.repository.UserRepository;
 import com.jashan.userservice.security.JwtService;
 import com.jashan.userservice.service.UserService;
@@ -38,7 +41,11 @@ public class UserServiceImpl implements UserService {
         Optional<User> existing = userRepository.findByEmail(registerRequestDTO.getEmail());
         if (existing.isPresent()) {
             log.warn("Registration failed: Email already exists - {}", registerRequestDTO.getEmail());
-            throw new RuntimeException("User already exists. Please log in");
+            throw new CustomException(
+                    ErrorCodeEnum.USER_ALREADY_EXISTS.getErrorCode(),
+                    ErrorCodeEnum.USER_ALREADY_EXISTS.getErrorMessage(),
+                    HttpStatus.BAD_REQUEST,
+                    "User with email already exists in the system");
         }
 
         log.debug("Mapping RegisterRequest to User entity");
@@ -70,14 +77,22 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByEmail(loginRequestDTO.getEmail())
                 .orElseThrow(() -> {
                     log.error("Login failed: Email not found - {}", loginRequestDTO.getEmail());
-                    return new RuntimeException("Invalid Email or Password");
+                    return new CustomException(
+                            ErrorCodeEnum.USER_NOT_FOUND.getErrorCode(),
+                            ErrorCodeEnum.USER_NOT_FOUND.getErrorMessage(),
+                            HttpStatus.NOT_FOUND,
+                            "User with email '" + loginRequestDTO.getEmail() + "' not found");
                 });
 
         log.debug("Verifying password for user: {}", user.getEmail());
 
         if (!bCryptPasswordEncoder.matches(loginRequestDTO.getPassword(), user.getPassword())) {
             log.error("Login failed: Email not found - {}", loginRequestDTO.getEmail());
-            throw new RuntimeException("Invalid Email or Password");
+            throw new CustomException(
+                    ErrorCodeEnum.INVALID_CREDENTIALS.getErrorCode(),
+                    ErrorCodeEnum.INVALID_CREDENTIALS.getErrorMessage(),
+                    HttpStatus.UNAUTHORIZED,
+                    "Incorrect password provided for email: " + loginRequestDTO.getEmail());
         }
 
         log.info("User logged in successfully: {}", user.getEmail());
