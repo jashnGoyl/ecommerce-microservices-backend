@@ -32,6 +32,6 @@ public class ProductResponse {
     @JsonProperty("created_at")
     private LocalDateTime createdAt;
 
-    @JsonProperty("create_at")
+    @JsonProperty("updated_at")
     private LocalDateTime updatedAt;
 }
