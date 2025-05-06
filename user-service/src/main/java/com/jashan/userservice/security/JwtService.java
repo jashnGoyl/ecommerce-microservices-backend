@@ -1,10 +1,12 @@
 package com.jashan.userservice.security;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import io.jsonwebtoken.Jwts;
@@ -23,10 +25,17 @@ public class JwtService {
         log.debug("JWT Secret Key initialized.");
     }
 
-    public String generateToken(String username) {
-        log.info("Generating JWT token for user: {}", username);
+    public String generateToken(UserDetails userDetails) {
+        log.info("Generating JWT token for user: {}", userDetails.getUsername());
+
+        List<String> roles = userDetails.getAuthorities()
+                .stream()
+                .map(auth -> auth.getAuthority()) // like "ROLE_ADMIN"
+                .toList();
+
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(userDetails.getUsername())
+                .claim("roles", roles)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 hours
                 .signWith(secretKey, SignatureAlgorithm.HS256)

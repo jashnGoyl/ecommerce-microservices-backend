@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +34,8 @@ public class UserServiceImpl implements UserService {
 
     private final JwtService jwtService;
 
+    private final CustomUserDetailService customUserDetailService;
+
     @Override
     public AuthResponseDTO register(RegisterRequestDTO registerRequestDTO) {
 
@@ -61,7 +64,8 @@ public class UserServiceImpl implements UserService {
 
         log.info("User registered successfully with email: {}", savedUser.getEmail());
 
-        String token = jwtService.generateToken(savedUser.getEmail());
+        UserDetails userDetails = customUserDetailService.loadUserByUsername(user.getEmail());
+        String token = jwtService.generateToken(userDetails);
 
         return AuthResponseDTO.builder()
                 .email(savedUser.getEmail())
@@ -97,7 +101,8 @@ public class UserServiceImpl implements UserService {
 
         log.info("User logged in successfully: {}", user.getEmail());
 
-        String token = jwtService.generateToken(user.getEmail());
+        UserDetails userDetails = customUserDetailService.loadUserByUsername(user.getEmail());
+        String token = jwtService.generateToken(userDetails);
 
         return AuthResponseDTO.builder()
                 .email(user.getEmail())

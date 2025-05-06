@@ -28,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/products")
+@RequestMapping("/api/products")
 @Slf4j
 public class ProductController {
 
@@ -36,8 +36,8 @@ public class ProductController {
 
     private final ModelMapper modelMapper;
 
-    @PostMapping
-    // @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/admin/add")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProductResponse> createProduct(@RequestBody @Valid ProductRequest productRequest) {
         log.info("Received request to create product: {}", productRequest.getName());
 
@@ -84,8 +84,8 @@ public class ProductController {
         return ResponseEntity.ok(responses);
     }
 
-    @PutMapping("/{id}")
-    // @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/admin/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProductResponse> updateProduct(@PathVariable Long id,
             @RequestBody @Valid ProductRequest request) {
         log.info("Updating product ID: {}", id);
@@ -102,8 +102,8 @@ public class ProductController {
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{id}")
-    // @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/admin/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         log.info("Deleting product ID: {}", id);
 
