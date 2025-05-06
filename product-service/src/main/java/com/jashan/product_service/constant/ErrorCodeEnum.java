@@ -24,7 +24,9 @@ public enum ErrorCodeEnum {
     TOKEN_EXPIRED(3001, "JWT token has expired"),
     INVALID_SIGNATURE(3002, "Invalid JWT signature"),
     INVALID_TOKEN(3003, "Malformed or unsupported JWT token"),
-    TOKEN_MISSING(3004, "JWT token is missing or empty");
+    TOKEN_MISSING(3004, "JWT token is missing or empty"),
+
+    ACCESS_DENIED(4001, "You are not authorized to perform this action.");
 
     private final int errorCode;
     private final String errorMessage;

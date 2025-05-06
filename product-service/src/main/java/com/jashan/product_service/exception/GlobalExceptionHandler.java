@@ -7,6 +7,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.transaction.CannotCreateTransactionException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
@@ -123,6 +124,22 @@ public class GlobalExceptionHandler {
                                 .build();
 
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+
+        @ExceptionHandler(AccessDeniedException.class)
+        public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex,
+                        HttpServletRequest request) {
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                                .errorCode(ErrorCodeEnum.ACCESS_DENIED.getErrorCode())
+                                .errorMessage(ErrorCodeEnum.ACCESS_DENIED.getErrorMessage())
+                                .statusCode(HttpStatus.FORBIDDEN.value())
+                                .httpMethod(request.getMethod())
+                                .backendMessage(ex.getMessage())
+                                .timestamp(LocalDateTime.now())
+                                .details(List.of("Access denied. You do not have permission to perform this action."))
+                                .build();
+
+                return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
         }
 
         @ExceptionHandler(Exception.class)
